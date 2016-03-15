@@ -15,8 +15,13 @@ public class WebServer {
     rc.property(ServerProperties.RESPONSE_SET_STATUS_OVER_SEND_ERROR, true);
     rc.register(JacksonFeature.class);
     rc.packages(true, "org.irenical.ist.cnv.cloudprime.rest");
-    HttpServer server = GrizzlyHttpServerFactory.createHttpServer(UriBuilder.fromUri("http://localhost").port(8080).path("factor").build(), rc);
-    Runtime.getRuntime().addShutdownHook(new Thread(() -> server.shutdown(), "Server shutdown hook"));
+    final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(UriBuilder.fromUri("http://localhost").port(8080).path("factor").build(), rc);
+    Runtime.getRuntime().addShutdownHook(new Thread(new Runnable(){
+      @Override
+      public void run() {
+        server.shutdown();
+      }
+    }, "Server shutdown hook"));
     server.start();
   }
 
