@@ -1,0 +1,50 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.irenical.maven</groupId>
+    <artifactId>parent-executable</artifactId>
+    <version>1.1.4</version>
+  </parent>
+
+  <groupId>org.irenical.ist</groupId>
+  <artifactId>cloudprime</artifactId>
+  <version>1.0.0</version>
+
+  <name>CloudPrime</name>
+  <description>For IST course (CNV)</description>
+
+  <packaging>jar</packaging>
+
+  <scm>
+    <connection>scm:git:git@github.com:tiagosimao/cloudprime.git</connection>
+    <developerConnection>scm:git:git@github.com:tiagosimao/cloudprime.git</developerConnection>
+    <url>git@github.com:tiagosimao/cloudprime.git</url>
+  </scm>
+
+  <developers>
+    <developer>
+      <name>Tiago Simão</name>
+      <email>tiagosimao@gmail.com</email>
+    </developer>
+  </developers>
+
+  <properties>
+    <main.class>org.irenical.ist.cnv.cloudprime.WebServer</main.class>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.glassfish.jersey.containers</groupId>
+      <artifactId>jersey-container-grizzly2-servlet</artifactId>
+      <version>2.22.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.media</groupId>
+      <artifactId>jersey-media-json-jackson</artifactId>
+      <version>2.22.1</version>
+    </dependency>
+  </dependencies>
+
+</project>
