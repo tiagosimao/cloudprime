@@ -15,7 +15,7 @@ public class WebServer {
     rc.property(ServerProperties.RESPONSE_SET_STATUS_OVER_SEND_ERROR, true);
     rc.register(JacksonFeature.class);
     rc.packages(true, "org.irenical.ist.cnv.cloudprime.rest");
-    final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(UriBuilder.fromUri("http://localhost").port(8080).path("factor").build(), rc);
+    final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(UriBuilder.fromUri("http://localhost").port(8080).build(), rc);
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable(){
       @Override
       public void run() {

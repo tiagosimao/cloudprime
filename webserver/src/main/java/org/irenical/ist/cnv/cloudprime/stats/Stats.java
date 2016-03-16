@@ -7,7 +7,7 @@ public class Stats {
   
   private static final Logger LOG = LoggerFactory.getLogger(Stats.class);
 
-  private static int i_count = 0, b_count = 0, m_count = 0;
+  private static long i_count = 0, b_count = 0, m_count = 0;
 
   public static synchronized void printICount(String foo) {
     LOG.error(i_count + " instructions in " + b_count + " basic blocks were executed in " + m_count + " methods.");
@@ -20,6 +20,13 @@ public class Stats {
 
   public static synchronized void mcount(int incr) {
     m_count++;
+  }
+
+  public static Usage getStats() {
+    Usage result = new Usage();
+    result.setIntructionCount(i_count);
+    result.setMethodCount(m_count);
+    return result;
   }
 
 }

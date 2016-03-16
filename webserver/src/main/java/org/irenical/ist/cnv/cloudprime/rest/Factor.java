@@ -10,7 +10,7 @@ import javax.ws.rs.core.Response;
 
 import org.irenical.ist.cnv.cloudprime.logic.Factorer;
 
-@Path("/{number}")
+@Path("factor/{number}")
 public class Factor {
 
   @POST
