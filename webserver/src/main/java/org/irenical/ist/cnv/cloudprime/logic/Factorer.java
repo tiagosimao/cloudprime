@@ -8,7 +8,7 @@ public class Factorer {
 
   public static Collection<Long> factor(String number) throws NumberFormatException {
     Long n = Long.parseLong(number);
-    Set<Long> result = new HashSet<>();
+    Set<Long> result = new HashSet<Long>();
     long lasting = n;
     for (int i = 2; i <= lasting; ++i) {
       if (lasting % i == 0) {
