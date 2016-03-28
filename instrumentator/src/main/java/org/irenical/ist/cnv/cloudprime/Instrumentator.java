@@ -20,9 +20,6 @@ public class Instrumentator implements Consumer<File> {
         accept(file);
       } else if (isValidFile(file)) {
         ClassInfo ci = new ClassInfo(file.getAbsolutePath());
-
-        // loop through all the routines
-        // see java.util.Enumeration for more information on Enumeration class
         for (Routine routine : (Vector<Routine>) ci.getRoutines()) {
           routine.addBefore("org/irenical/ist/cnv/cloudprime/stats/Stats", "mcount", new Integer(1));
 
@@ -38,7 +35,7 @@ public class Instrumentator implements Consumer<File> {
   }
 
   private boolean isValidFile(File file) {
-    return file.getName().endsWith("Factorer.class");
+    return file.getParent().endsWith("logic");
   }
 
 }

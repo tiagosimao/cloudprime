@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Stats {
-  
+
   private static final Logger LOG = LoggerFactory.getLogger(Stats.class);
 
   private static long i_count = 0, b_count = 0, m_count = 0;
