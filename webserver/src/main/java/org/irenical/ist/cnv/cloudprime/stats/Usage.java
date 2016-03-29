@@ -5,6 +5,8 @@ public class Usage {
   private long methodCount;
 
   private long intructionCount;
+  
+  private long blockCount;
 
   public void setIntructionCount(long intructionCount) {
     this.intructionCount = intructionCount;
@@ -20,6 +22,14 @@ public class Usage {
 
   public long getMethodCount() {
     return methodCount;
+  }
+  
+  public void setBlockCount(long blockCount) {
+    this.blockCount = blockCount;
+  }
+  
+  public long getBlockCount() {
+    return blockCount;
   }
 
 }
