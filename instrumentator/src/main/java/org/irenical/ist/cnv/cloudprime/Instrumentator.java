@@ -21,14 +21,13 @@ public class Instrumentator implements Consumer<File> {
       } else if (isValidFile(file)) {
         ClassInfo ci = new ClassInfo(file.getAbsolutePath());
         for (Routine routine : (Vector<Routine>) ci.getRoutines()) {
-          routine.addBefore("org/irenical/ist/cnv/cloudprime/stats/Stats", "mcount", new Integer(1));
+          routine.addBefore("org/irenical/ist/cnv/cloudprime/stats/Metric", "reportMethods", routine.getMethodName());
 
           for (Enumeration<BasicBlock> b = routine.getBasicBlocks().elements(); b.hasMoreElements();) {
             BasicBlock bb = b.nextElement();
-            bb.addBefore("org/irenical/ist/cnv/cloudprime/stats/Stats", "count", new Integer(bb.size()));
+              bb.addBefore("org/irenical/ist/cnv/cloudprime/stats/Metric", "reportInstructions", bb.size());
           }
         }
-        ci.addAfter("org/irenical/ist/cnv/cloudprime/stats/Stats", "printICount", ci.getClassName());
         ci.write(file.getAbsolutePath());
       }
     }
