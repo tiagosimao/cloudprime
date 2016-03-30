@@ -5,7 +5,22 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Metric {
+    private static int mActiveThreads = 0;
     private static Map<Long, Stat> mStats = new HashMap<Long, Stat>();
+
+    public static synchronized void start(BigInteger bigInteger) {
+        mActiveThreads++;
+        mStats.put(Thread.currentThread().getId(), new Stat(bigInteger));
+        System.out.println(String.format("Factoring: %d (%d/%d active threads)", bigInteger, mActiveThreads, Thread.activeCount()));
+    }
+
+    public static synchronized void end() {
+        mActiveThreads--;
+        Stat stat = mStats.get(Thread.currentThread().getId());
+        System.out.println(String.format("Factorization of: %d took %d instructions and %d methods", stat.TargetNumber, stat.InstructionsCounter, stat.MethodCounter));
+
+        // TODO: save the Stats information to a permanent database
+    }
 
     public static synchronized void reportInstructions(int instructions) {
         Stat stat = mStats.get(Thread.currentThread().getId());
@@ -19,15 +34,6 @@ public class Metric {
         // System.out.println(String.format("Factorization of: %d taking %d methods", stat.TargetNumber, stat.MethodCounter));
     }
 
-    public static synchronized void start(BigInteger bigInteger) {
-        mStats.put(Thread.currentThread().getId(), new Stat(bigInteger));
-    }
-
-    public static synchronized void end() {
-        Stat stat = mStats.get(Thread.currentThread().getId());
-        System.out.println(String.format("Factorization of: %d took %d instructions and %d methods", stat.TargetNumber, stat.InstructionsCounter, stat.MethodCounter));
-        // TODO: save the Stats information to a permanent database
-    }
 
     private static class Stat {
         final BigInteger TargetNumber;
