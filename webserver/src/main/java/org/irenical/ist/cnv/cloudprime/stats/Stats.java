@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Deprecated
 public class Stats {
 
   private static final Logger LOG = LoggerFactory.getLogger(Stats.class);

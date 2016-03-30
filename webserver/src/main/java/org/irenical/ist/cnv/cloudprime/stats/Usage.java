@@ -1,5 +1,6 @@
 package org.irenical.ist.cnv.cloudprime.stats;
 
+@Deprecated
 public class Usage {
 
   private long methodCount;
