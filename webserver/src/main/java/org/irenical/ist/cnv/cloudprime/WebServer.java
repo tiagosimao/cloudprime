@@ -7,7 +7,6 @@ import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
-import org.irenical.ist.cnv.cloudprime.stats.Stats;
 
 public class WebServer {
 
@@ -21,10 +20,8 @@ public class WebServer {
       @Override
       public void run() {
         server.shutdown();
-        Stats.stop();
       }
     }, "Server shutdown hook"));
-    Stats.start();
     server.start();
   }
 

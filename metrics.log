@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE log SYSTEM "logger.dtd">
+<log>
+<record>
+  <date>2016-03-31T23:45:08</date>
+  <millis>1459464308144</millis>
+  <sequence>2</sequence>
+  <logger>org.irenical.ist.cnv.cloudprime.stats.Metric</logger>
+  <level>INFO</level>
+  <class>org.irenical.ist.cnv.cloudprime.stats.Metric</class>
+  <method>start</method>
+  <thread>16</thread>
+  <message>Factoring: 1337 (1/15 active threads)</message>
+</record>
+<record>
+  <date>2016-03-31T23:45:08</date>
+  <millis>1459464308148</millis>
+  <sequence>3</sequence>
+  <logger>org.irenical.ist.cnv.cloudprime.stats.Metric</logger>
+  <level>INFO</level>
+  <class>org.irenical.ist.cnv.cloudprime.stats.Metric</class>
+  <method>end</method>
+  <thread>16</thread>
+  <message>Factorization of: 1337 took 11100 instructions and 8 methods</message>
+</record>

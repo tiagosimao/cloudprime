@@ -47,6 +47,10 @@ public class Metric {
         stat.MethodCounter += 1;
         // System.out.println(String.format("Factorization of: %d taking %d methods", stat.TargetNumber, stat.MethodCounter));
     }
+    
+    public static int getActiveThreadCount() {
+      return mActiveThreads;
+    }
 
 
     private static class Stat {
