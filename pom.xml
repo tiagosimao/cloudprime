@@ -19,6 +19,7 @@
   <modules>
     <module>instrumentator</module>
     <module>webserver</module>
+    <module>LoadBalancer</module>
   </modules>
 
 </project>
