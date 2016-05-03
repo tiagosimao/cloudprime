@@ -7,6 +7,8 @@ import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
+import org.joda.time.DateTimeZone;
+import org.joda.time.LocalDateTime;
 
 import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
 import com.amazonaws.regions.Region;
@@ -47,6 +49,7 @@ public class WebServer {
         me.withPrimaryKey("id", myId);
         me.withInt("load", 0);
         me.withInt("capacity", Runtime.getRuntime().availableProcessors());
+        me.withString("keepAlive", LocalDateTime.now(DateTimeZone.UTC).toString());
         nodes.putItem(me);
     }
 
