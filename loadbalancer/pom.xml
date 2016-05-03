@@ -3,6 +3,20 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>cloudprime</artifactId>
+        <groupId>org.irenical.ist</groupId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>loadbalancer</artifactId>
+
+    <name>CloudPrime LoadBalancer</name>
+    <description>For IST course (CNV)</description>
+
+    <packaging>jar</packaging>
+
     <dependencies>
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
@@ -19,18 +33,15 @@
             <artifactId>jersey-container-grizzly2-http</artifactId>
             <version>2.22.2</version>
         </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-ec2</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-dynamodb</artifactId>
+            <version>RELEASE</version>
+        </dependency>
     </dependencies>
-    <parent>
-        <artifactId>cloudprime</artifactId>
-        <groupId>org.irenical.ist</groupId>
-        <version>1.0.0-SNAPSHOT</version>
-    </parent>
-
-    <artifactId>loadbalancer</artifactId>
-
-    <name>CloudPrime LoadBalancer</name>
-    <description>For IST course (CNV)</description>
-
-    <packaging>jar</packaging>
-
 </project>
