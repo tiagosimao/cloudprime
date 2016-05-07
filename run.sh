@@ -1,2 +1,5 @@
 #!/bin/sh
-java -jar webserver/target/webserver.jar
+mvn clean package
+java -jar -Daws.accessKeyId="$1" -Daws.secretKey="$2" loadbalancer/target/loadbalancer.jar
+
+

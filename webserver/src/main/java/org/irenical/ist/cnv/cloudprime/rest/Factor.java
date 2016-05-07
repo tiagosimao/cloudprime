@@ -2,6 +2,8 @@ package org.irenical.ist.cnv.cloudprime.rest;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -18,12 +20,13 @@ import org.irenical.ist.cnv.cloudprime.stats.Metric;
 
 @Path("f.html")
 public class Factor {
+    
+    private final Executor threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()); 
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public void asyncGet(@Suspended final AsyncResponse asyncResponse, @QueryParam("n") final String number) {
-
-        new Thread(new Runnable() {
+        threadPool.execute(new Runnable() {
             @Override
             public void run() {
                 BigInteger integer = new BigInteger(number);
@@ -32,6 +35,6 @@ public class Factor {
                 Metric.end();
                 asyncResponse.resume(res);
             }
-        }).start();
+        });
     }
 }
