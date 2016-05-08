@@ -11,6 +11,8 @@ public class LoadBalancer {
 
     public static final int MAX_NODES = 4;
     
+    public static final int MAX_JOBS_PER_NODE = 4;
+    
     public static final int CONSUMER_THREAD_COUNT = 10;
 
     public static final long EC2_SYNC_POLL_MILLIS = 1000 * 20;

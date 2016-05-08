@@ -32,8 +32,7 @@ public class Metric {
         mActiveThreads--;
         Stat stat = mStats.get(Thread.currentThread().getId());
         mLog.log(Level.INFO, (String.format("Factorization of: %d took %d instructions and %d methods", stat.TargetNumber, stat.InstructionsCounter, stat.MethodCounter)));
-
-        // TODO: save the Stats information to a permanent database
+        DBController.getInstance().asyncReport(stat.TargetNumber, stat.InstructionsCounter, stat.MethodCounter);
     }
 
     public static synchronized void reportInstructions(int instructions) {

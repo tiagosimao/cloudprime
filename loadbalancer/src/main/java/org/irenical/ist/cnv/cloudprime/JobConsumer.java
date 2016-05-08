@@ -37,12 +37,8 @@ public class JobConsumer implements Runnable {
         if (got.isPresent()) {
             return got.get().longValue();
         } else {
-            return guess(n);
+            return Long.MAX_VALUE;
         }
-    }
-
-    private long guess(String n) {
-        return n.length();
     }
 
 }

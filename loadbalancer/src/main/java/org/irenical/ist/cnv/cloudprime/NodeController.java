@@ -123,9 +123,11 @@ public class NodeController {
         }
     }
 
+    // the number of jobs should be irrelevant
+    @Deprecated
     private boolean isAdequate(CloudprimeNode node) {
         List<Job> jobs = node.getJobs();
-        return jobs.isEmpty();
+        return jobs.size() < LoadBalancer.MAX_JOBS_PER_NODE;
     }
 
     private CloudprimeNode bestFit(CloudprimeNode a, CloudprimeNode b) {

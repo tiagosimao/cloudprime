@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
@@ -49,10 +48,10 @@ public class EC2Controller {
     private DynamoDB dynamo;
 
     private EC2Controller() {
-        ec2 = new AmazonEC2Client(new SystemPropertiesCredentialsProvider());
+        ec2 = new AmazonEC2Client();
         ec2.setRegion(Region.getRegion(Regions.EU_WEST_1));
 
-        AmazonDynamoDBClient dynamoC = new AmazonDynamoDBClient(new SystemPropertiesCredentialsProvider());
+        AmazonDynamoDBClient dynamoC = new AmazonDynamoDBClient();
         dynamoC.setRegion(Region.getRegion(Regions.EU_WEST_1));
         dynamo = new DynamoDB(dynamoC);
 
@@ -82,17 +81,17 @@ public class EC2Controller {
                     Optional<CloudprimeNode> got = getNode(i.getInstanceId());
                     if (got.isPresent()) {
                         CloudprimeNode node = got.get();
-                        if(node.isReady()){
-                          running.add(node.getId());
-                          CloudprimeNode old = current.get(node.getId());
-                          if (old == null) {
-                              current.put(node.getId(), node);
-                          } else {
-                              old.setLaunchTime(node.getLaunchTime());
-                              old.setPrivateAddress(node.getPrivateAddress());
-                              old.setPublicAddress(node.getPublicAddress());
-                              old.setReady(node.isReady());
-                          }
+                        if (node.isReady()) {
+                            running.add(node.getId());
+                            CloudprimeNode old = current.get(node.getId());
+                            if (old == null) {
+                                current.put(node.getId(), node);
+                            } else {
+                                old.setLaunchTime(node.getLaunchTime());
+                                old.setPrivateAddress(node.getPrivateAddress());
+                                old.setPublicAddress(node.getPublicAddress());
+                                old.setReady(node.isReady());
+                            }
                         }
                     }
                 } catch (Exception e) {
@@ -101,8 +100,8 @@ public class EC2Controller {
             }
         }
         // removing terminated nodes
-        for(String oldId : new HashSet<>(current.keySet())){
-            if(!running.contains(oldId)){
+        for (String oldId : new HashSet<>(current.keySet())) {
+            if (!running.contains(oldId)) {
                 current.remove(oldId);
             }
         }
@@ -117,7 +116,7 @@ public class EC2Controller {
         runInstancesRequest.withImageId("ami-e1398992").withKeyName("cloudprime-node").withInstanceType("t2.micro");
         runInstancesRequest.withMinCount(1).withMaxCount(1).withKeyName("tiagosimao-aws");
         runInstancesRequest.withSecurityGroupIds("sg-5e50563a");
-        
+
         IamInstanceProfileSpecification iamInstanceProfile = new IamInstanceProfileSpecification();
         iamInstanceProfile.withName("cloudprime");
         runInstancesRequest.withIamInstanceProfile(iamInstanceProfile);
@@ -173,14 +172,19 @@ public class EC2Controller {
                 node.setPrivateAddress(i.getPrivateDnsName());
                 node.setReady(false);
                 if (16 == i.getState().getCode()) {
+                    Response response = null;
                     try {
                         Request hr = new Request.Builder().url("http://" + i.getPublicDnsName() + ":8080/status").build();
-                        Response response = http.newCall(hr).execute();
+                        response = http.newCall(hr).execute();
                         node.setReady(response.isSuccessful());
                     } catch (SocketTimeoutException | ConnectException e) {
                         System.out.println("No HTTP connection avaliable for node " + id);
                     } catch (IOException e) {
                         e.printStackTrace();
+                    } finally {
+                        if (response != null) {
+                            response.body().close();
+                        }
                     }
                 } else if (0 != i.getState().getCode()) {
                     throw new InterruptedException();
