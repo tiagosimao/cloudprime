@@ -6,9 +6,11 @@ import java.math.BigInteger;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
 import com.amazonaws.regions.Region;
@@ -22,6 +24,7 @@ import com.amazonaws.services.ec2.model.CreateTagsRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.Filter;
+import com.amazonaws.services.ec2.model.IamInstanceProfileSpecification;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.Reservation;
 import com.amazonaws.services.ec2.model.RunInstancesRequest;
@@ -65,30 +68,48 @@ public class EC2Controller {
         return instance;
     }
 
-    public List<CloudprimeNode> listNodes() {
-        List<CloudprimeNode> nodes = new LinkedList<>();
+    public void updateNodes(Map<String, CloudprimeNode> current) {
+        Set<String> running = new HashSet<>();
         DescribeInstancesRequest request = new DescribeInstancesRequest();
         Filter filter1 = new Filter("tag:Name", Arrays.asList("cloudprime-node"));
-        Filter filter2 = new Filter("instance-state-code",Arrays.asList("16"));
-        DescribeInstancesResult result = ec2.describeInstances(request.withFilters(filter1,filter2));
+        Filter filter2 = new Filter("instance-state-code", Arrays.asList("16"));
+        DescribeInstancesResult result = ec2.describeInstances(request.withFilters(filter1, filter2));
         List<Reservation> reservations = result.getReservations();
 
         for (Reservation r : reservations) {
             for (Instance i : r.getInstances()) {
                 try {
-                    Optional<CloudprimeNode> node = getNode(i.getInstanceId());
-                    if (node.isPresent()) {
-                        nodes.add(node.get());
+                    Optional<CloudprimeNode> got = getNode(i.getInstanceId());
+                    if (got.isPresent()) {
+                        CloudprimeNode node = got.get();
+                        if(node.isReady()){
+                          running.add(node.getId());
+                          CloudprimeNode old = current.get(node.getId());
+                          if (old == null) {
+                              current.put(node.getId(), node);
+                          } else {
+                              old.setLaunchTime(node.getLaunchTime());
+                              old.setPrivateAddress(node.getPrivateAddress());
+                              old.setPublicAddress(node.getPublicAddress());
+                              old.setReady(node.isReady());
+                          }
+                        }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
-        return nodes;
+        // removing terminated nodes
+        for(String oldId : new HashSet<>(current.keySet())){
+            if(!running.contains(oldId)){
+                current.remove(oldId);
+            }
+        }
     }
 
-    public Optional<CloudprimeNode> createNode() throws IOException, InterruptedException {
+    public void createNode() throws IOException, InterruptedException {
+
         Instance result = null;
 
         RunInstancesRequest runInstancesRequest = new RunInstancesRequest();
@@ -96,6 +117,10 @@ public class EC2Controller {
         runInstancesRequest.withImageId("ami-e1398992").withKeyName("cloudprime-node").withInstanceType("t2.micro");
         runInstancesRequest.withMinCount(1).withMaxCount(1).withKeyName("tiagosimao-aws");
         runInstancesRequest.withSecurityGroupIds("sg-5e50563a");
+        
+        IamInstanceProfileSpecification iamInstanceProfile = new IamInstanceProfileSpecification();
+        iamInstanceProfile.withName("cloudprime");
+        runInstancesRequest.withIamInstanceProfile(iamInstanceProfile);
 
         runInstancesRequest.setUserData(loadUserData());
 
@@ -111,7 +136,7 @@ public class EC2Controller {
             result = ec2Instance;
             break;
         }
-        return waitUntilNodeReady(result.getInstanceId());
+        waitUntilNodeReady(result.getInstanceId());
     }
 
     public void destroyNode(String id) {
@@ -121,7 +146,7 @@ public class EC2Controller {
         ec2.terminateInstances(terminateRequest);
     }
 
-    public Optional<CloudprimeNode> waitUntilNodeReady(String id) throws InterruptedException {
+    private void waitUntilNodeReady(String id) throws InterruptedException {
         Optional<CloudprimeNode> node = null;
         boolean isReady = false;
         do {
@@ -131,7 +156,6 @@ public class EC2Controller {
             isReady = node.isPresent() ? node.get().isReady() : false;
         } while (!isReady);
         System.out.println("New EC2 instance is ready!");
-        return node;
     }
 
     private Optional<CloudprimeNode> getNode(String id) throws InterruptedException {
@@ -172,7 +196,6 @@ public class EC2Controller {
     }
 
     public Optional<BigInteger> getNumberCost(BigInteger number) {
-        System.out.println("...remembering how much this cost: " + number);
         Table table = dynamo.getTable("cloudprime-number");
         Item got = table.getItem("id", number);
         BigInteger is = got == null ? null : got.getBigInteger("cost");
