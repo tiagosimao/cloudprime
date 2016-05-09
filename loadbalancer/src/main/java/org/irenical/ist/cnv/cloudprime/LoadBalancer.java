@@ -2,12 +2,13 @@ package org.irenical.ist.cnv.cloudprime;
 
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
+import org.glassfish.grizzly.http.server.StaticHttpHandler;
 
 public class LoadBalancer {
     
     public volatile static boolean RUNNING = false;
     
-    public static final int MIN_NODES = 2;
+    public static final int MIN_NODES = 0;
 
     public static final int MAX_NODES = 4;
     
@@ -30,6 +31,9 @@ public class LoadBalancer {
         httpServer.addListener(networkListener);
 
         httpServer.getServerConfiguration().addHttpHandler(new RedirectHandler(), "/f.html");
+        httpServer.getServerConfiguration().addHttpHandler(new ApiHandler(), "/api");
+        httpServer.getServerConfiguration().addHttpHandler(new ResourceHandler(), "/index.html");
+        httpServer.getServerConfiguration().addHttpHandler(new ResourceHandler(), "/cloudprime.js");
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override

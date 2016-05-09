@@ -31,12 +31,12 @@ public class JobConsumer implements Runnable {
         job.setCost(expectedWeight(job.getNumber()));
     }
 
-    private long expectedWeight(String n) {
-        BigInteger i = new BigInteger(n);
+    private long expectedWeight(BigInteger i) {
         Optional<BigInteger> got = EC2Controller.getInstance().getNumberCost(i);
         if (got.isPresent()) {
             return got.get().longValue();
         } else {
+            //TODO this will overflow when added, use a "high" value instead
             return Long.MAX_VALUE;
         }
     }

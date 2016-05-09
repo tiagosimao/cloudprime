@@ -1,8 +1,10 @@
 package org.irenical.ist.cnv.cloudprime;
 
+import java.math.BigInteger;
+
 public class Job {
 
-    private String number;
+    private BigInteger number;
 
     private Long cost;
 
@@ -18,11 +20,11 @@ public class Job {
         return cost;
     }
 
-    public void setNumber(String number) {
+    public void setNumber(BigInteger number) {
         this.number = number;
     }
 
-    public String getNumber() {
+    public BigInteger getNumber() {
         return number;
     }
 
@@ -41,5 +43,5 @@ public class Job {
     public boolean isOngoing() {
         return ongoing;
     }
-
+    
 }

@@ -79,6 +79,10 @@ public class NodeController {
         executor.shutdown();
         ec2Lancher.shutdown();
     }
+    
+    public List<CloudprimeNode> list(){
+        return new LinkedList<>(NODES.values());
+    }
 
     public void runJob(Job job) throws IOException, InterruptedException {
         CloudprimeNode node = findAdequateNode(job);
