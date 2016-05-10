@@ -2,32 +2,35 @@ package org.irenical.ist.cnv.cloudprime;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
+import org.irenical.jindy.Config;
+import org.irenical.jindy.ConfigFactory;
 
 import com.google.gson.Gson;
 
 public class ApiHandler extends HttpHandler {
-    
+
     private static final String USAGE = "Usage:\n/api/node\n/api/job";
 
-    @Override
-    public void destroy() {
-        super.destroy();
+    private static final Config config = ConfigFactory.getConfig();
+
+    public void boot() throws Exception {
     }
 
-    @Override
-    public void start() {
-        super.start();
+    public void shutdown() {
     }
 
     @Override
     public void service(Request request, Response response) throws Exception {
-        String [] path = getPath(request.getRequestURI());
-        if(path.length>1){
+        String[] path = getPath(request.getRequestURI());
+        if (path.length > 1) {
             switch (path[1]) {
             case "node":
                 node(response.getWriter());
@@ -35,19 +38,44 @@ public class ApiHandler extends HttpHandler {
             case "job":
                 job(response.getWriter());
                 return;
+            case "config":
+                config(request, response);
+                return;
             }
         }
         response.getWriter().append(USAGE);
     }
-    
-    private String [] getPath(String uri) {
-        if(uri.charAt(0)=='/'){
+
+    private void config(Request request, Response response) throws IOException {
+        Gson gson = new Gson();
+        if (Method.POST.equals(request.getMethod())) {
+            Map<String, String[]> params = request.getParameterMap();
+            for (String k : params.keySet()) {
+                String[] values = params.get(k);
+                Object value = null;
+                if (values != null && values.length != 0) {
+                    value = values.length == 1 ? values[0] : values;
+                }
+                config.setProperty(k, value);
+            }
+            response.sendRedirect("/");
+        } else {
+            Map<String, String> props = new HashMap<>();
+            for (String k : config.getKeys("cloudprime")) {
+                props.put(k, config.getString(k));
+            }
+            response.getWriter().write(gson.toJson(props));
+        }
+    }
+
+    private String[] getPath(String uri) {
+        if (uri.charAt(0) == '/') {
             uri = uri.substring(1);
         }
-        if(uri.endsWith("/")){
-            uri = uri.substring(0,uri.length()-1);
+        if (uri.endsWith("/")) {
+            uri = uri.substring(0, uri.length() - 1);
         }
-        return uri.length() == 0 ? new String[]{} : uri.split("/");
+        return uri.length() == 0 ? new String[] {} : uri.split("/");
     }
 
     private void node(Writer writer) throws IOException {

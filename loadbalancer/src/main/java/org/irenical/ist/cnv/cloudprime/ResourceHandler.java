@@ -9,6 +9,12 @@ import org.glassfish.grizzly.http.server.Response;
 import com.amazonaws.util.IOUtils;
 
 public class ResourceHandler extends HttpHandler {
+    
+    public void boot() throws Exception {
+    }
+
+    public void shutdown() {
+    }
 
     @Override
     public void service(Request request, Response response) throws Exception {

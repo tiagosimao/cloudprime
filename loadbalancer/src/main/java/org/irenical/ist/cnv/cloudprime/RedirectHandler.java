@@ -8,31 +8,23 @@ import org.glassfish.grizzly.http.server.Response;
 
 public class RedirectHandler extends HttpHandler {
 
-    @Override
-    public void destroy() {
-        super.destroy();
+    public void boot() throws Exception {
+        LoadBalancer.RUNNING = true;
+        NodeController.getInstance().start();
+        JobController.getInstance().start();
+    }
+
+    public void shutdown() {
         LoadBalancer.RUNNING = false;
         JobController.getInstance().stop();
         NodeController.getInstance().stop();
     }
 
     @Override
-    public void start() {
-        try {
-            super.start();
-            LoadBalancer.RUNNING = true;
-            NodeController.getInstance().start();
-            JobController.getInstance().start();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
     public void service(Request request, Response response) throws Exception {
         String input = request.getParameter("n");
         BigInteger number = toNumber(input);
-        if (number!=null) {
+        if (number != null) {
             System.out.println("new request: " + number);
             Job job = JobController.getInstance().submitJob(number);
             if (job.getResult() != null) {
