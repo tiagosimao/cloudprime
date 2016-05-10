@@ -12,6 +12,7 @@ import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 import org.irenical.jindy.Config;
 import org.irenical.jindy.ConfigFactory;
+import org.irenical.jindy.ConfigNotFoundException;
 
 import com.google.gson.Gson;
 
@@ -46,7 +47,7 @@ public class ApiHandler extends HttpHandler {
         response.getWriter().append(USAGE);
     }
 
-    private void config(Request request, Response response) throws IOException {
+    private void config(Request request, Response response) throws IOException, ConfigNotFoundException {
         Gson gson = new Gson();
         if (Method.POST.equals(request.getMethod())) {
             Map<String, String[]> params = request.getParameterMap();
@@ -57,6 +58,7 @@ public class ApiHandler extends HttpHandler {
                     value = values.length == 1 ? values[0] : values;
                 }
                 config.setProperty(k, value);
+                LoadBalancer.reload();
             }
             response.sendRedirect("/");
         } else {

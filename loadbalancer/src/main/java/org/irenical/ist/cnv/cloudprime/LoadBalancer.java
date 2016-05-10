@@ -1,10 +1,13 @@
 package org.irenical.ist.cnv.cloudprime;
 
+import java.io.IOException;
+
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
 import org.glassfish.grizzly.http.server.StaticHttpHandler;
 import org.irenical.jindy.Config;
 import org.irenical.jindy.ConfigFactory;
+import org.irenical.jindy.ConfigNotFoundException;
 
 public class LoadBalancer {
     
@@ -28,36 +31,49 @@ public class LoadBalancer {
 
     private static Config config;
     
+    private static HttpServer httpServer;
+    
+    private static RedirectHandler redirect;
+    
+    private static ApiHandler api;
+    
+    private static ResourceHandler resource;
+    
+    public static void reload() throws IOException, ConfigNotFoundException {
+        if(httpServer!=null){
+            httpServer.shutdown(); 
+        }
+        httpServer=new HttpServer();
+        NetworkListener networkListener = new NetworkListener("LoadBalancer", HOST, config.getMandatoryInt(LB_PORT));
+        httpServer.addListener(networkListener);
+        httpServer.getServerConfiguration().addHttpHandler(redirect, "/f.html");
+        httpServer.getServerConfiguration().addHttpHandler(api, "/api");
+        httpServer.getServerConfiguration().addHttpHandler(resource, "/*");
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("Stopping server..");
+                httpServer.shutdown();
+            }
+        }, "shutdownHook"));
+        httpServer.start();
+    }
 
     public static void main(String... args) {
         try {
             
             config = ConfigFactory.getConfig();
 
-            RedirectHandler redirect = new RedirectHandler();
-            ApiHandler api = new ApiHandler();
-            ResourceHandler resource = new ResourceHandler();
+            redirect = new RedirectHandler();
+            api = new ApiHandler();
+            resource = new ResourceHandler();
 
             redirect.boot();
             api.boot();
             resource.boot();
 
-            HttpServer httpServer = new HttpServer();
-            NetworkListener networkListener = new NetworkListener("LoadBalancer", HOST, config.getMandatoryInt(LB_PORT));
-            httpServer.addListener(networkListener);
-            httpServer.getServerConfiguration().addHttpHandler(redirect, "/f.html");
-            httpServer.getServerConfiguration().addHttpHandler(api, "/api");
-            httpServer.getServerConfiguration().addHttpHandler(resource, "/*");
-
-            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    System.out.println("Stopping server..");
-                    httpServer.shutdown();
-                }
-            }, "shutdownHook"));
-
-            httpServer.start();
+            reload();
+            
             System.out.println("Press CTRL^C to exit..");
             Thread.currentThread().join();
             
