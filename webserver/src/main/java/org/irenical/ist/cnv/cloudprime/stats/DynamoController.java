@@ -11,23 +11,24 @@ import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
 
-public class DBController {
+public class DynamoController {
     
     private final ExecutorService exec = Executors.newCachedThreadPool();
 
     private DynamoDB dynamo;
 
-    private DBController() {
+    
+    private DynamoController() {
         AmazonDynamoDBClient dynamoC = new AmazonDynamoDBClient();
         dynamoC.setRegion(Region.getRegion(Regions.EU_WEST_1));
         dynamo = new DynamoDB(dynamoC);
     }
 
-    private static DBController instance;
+    private static DynamoController instance;
 
-    public static synchronized DBController getInstance() {
+    public static synchronized DynamoController getInstance() {
         if (instance == null) {
-            instance = new DBController();
+            instance = new DynamoController();
         }
         return instance;
     }
