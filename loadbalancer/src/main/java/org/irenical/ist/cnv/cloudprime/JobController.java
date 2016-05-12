@@ -16,9 +16,9 @@ public class JobController {
 
     private static final Config config = ConfigFactory.getConfig();
 
-    private final BlockingQueue<Job> jobQueue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<CloudprimeJob> jobQueue = new LinkedBlockingQueue<>();
 
-    private final List<Job> pending = new CopyOnWriteArrayList<Job>();
+    private final List<CloudprimeJob> pending = new CopyOnWriteArrayList<CloudprimeJob>();
 
     private ExecutorService executor = null;
 
@@ -67,14 +67,14 @@ public class JobController {
         executor.shutdown();
     }
 
-    public List<Job> list() {
-        List<Job> result = new LinkedList<>(jobQueue);
+    public List<CloudprimeJob> list() {
+        List<CloudprimeJob> result = new LinkedList<>(jobQueue);
         result.addAll(pending);
         return result;
     }
 
-    public Job submitJob(BigInteger number) throws InterruptedException {
-        Job job = new Job();
+    public CloudprimeJob submitJob(BigInteger number) throws InterruptedException {
+        CloudprimeJob job = new CloudprimeJob();
         job.setNumber(number);
         synchronized (job) {
             jobQueue.put(job);
@@ -84,8 +84,8 @@ public class JobController {
         return job;
     }
 
-    public Job popJob() throws InterruptedException {
-        Job poped = jobQueue.take();
+    public CloudprimeJob popJob() throws InterruptedException {
+        CloudprimeJob poped = jobQueue.take();
         synchronized (poped) {
             pending.add(poped);
             poped.setOngoing(true);
@@ -93,7 +93,7 @@ public class JobController {
         return poped;
     }
 
-    public void putbackJob(Job job) throws InterruptedException {
+    public void putbackJob(CloudprimeJob job) throws InterruptedException {
         synchronized (job) {
             jobQueue.put(job);
             pending.remove(job);
@@ -101,7 +101,7 @@ public class JobController {
         }
     }
 
-    public void resolveJob(Job job) {
+    public void resolveJob(CloudprimeJob job) {
         synchronized (job) {
             pending.remove(job);
             job.setOngoing(false);

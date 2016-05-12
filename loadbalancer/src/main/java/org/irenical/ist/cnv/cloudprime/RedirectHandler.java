@@ -26,7 +26,7 @@ public class RedirectHandler extends HttpHandler {
         BigInteger number = toNumber(input);
         if (number != null) {
             System.out.println("new request: " + number);
-            Job job = JobController.getInstance().submitJob(number);
+            CloudprimeJob job = JobController.getInstance().submitJob(number);
             if (job.getResult() != null) {
                 response.getWriter().append(job.getResult());
             } else {

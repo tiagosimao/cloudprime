@@ -2,21 +2,21 @@ package org.irenical.ist.cnv.cloudprime;
 
 import java.math.BigInteger;
 
-public class Job {
+public class CloudprimeJob {
 
     private BigInteger number;
 
-    private Long cost;
+    private long cost = -1;
 
     private String result;
 
     private boolean ongoing;
-
-    public void setCost(Long cost) {
+    
+    public void setCost(long cost) {
         this.cost = cost;
     }
 
-    public Long getCost() {
+    public long getCost() {
         return cost;
     }
 

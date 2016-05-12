@@ -87,7 +87,7 @@ function printNodes(nodes){
     // divs.exit().remove();
 }
 
-window.setInterval(updateJobs, 1000);
-window.setInterval(updateNodes, 1000);
+updateJobs();
+updateNodes();
 
 updateForm();

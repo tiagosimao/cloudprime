@@ -16,7 +16,7 @@ import org.irenical.jindy.ConfigFactory;
 import okhttp3.OkHttpClient;
 
 public class NodeController {
-    
+
     private static final Config config = ConfigFactory.getConfig();
 
     private final OkHttpClient http = new OkHttpClient().newBuilder().connectTimeout(0, TimeUnit.MILLISECONDS).readTimeout(0, TimeUnit.MILLISECONDS).build();
@@ -50,7 +50,7 @@ public class NodeController {
                     int minNodes = config.getInt(LoadBalancer.Property.MIN_NODES, LoadBalancer.Default.MIN_NODES);
                     long maxInactivity = config.getInt(LoadBalancer.Property.MAX_NODE_INACTIVITY_MILLIS, LoadBalancer.Default.MAX_NODE_INACTIVITY_MILLIS);
                     EC2Controller.getInstance().updateNodes(NODES);
-                    synchronized(NodeController.this){
+                    synchronized (NodeController.this) {
                         NodeController.this.notifyAll();
                     }
                     System.out.println("Updating running nodes");
@@ -59,7 +59,7 @@ public class NodeController {
                     }
                     if (NODES.size() > minNodes) {
                         for (CloudprimeNode node : NODES.values()) {
-                            List<Job> jobs = node.getJobs();
+                            List<CloudprimeJob> jobs = node.getJobs();
                             if (node.isReady() && jobs.isEmpty()) {
                                 long last = node.getLastActivity();
                                 if (System.currentTimeMillis() - last > maxInactivity) {
@@ -68,7 +68,7 @@ public class NodeController {
                                 }
                             }
                         }
-                    } else if(NODES.size() < minNodes) {
+                    } else if (NODES.size() < minNodes) {
                         EC2Controller.getInstance().createNode();
                         EC2Controller.getInstance().updateNodes(NODES);
                     }
@@ -86,22 +86,22 @@ public class NodeController {
         executor.shutdown();
         ec2Lancher.shutdown();
     }
-    
-    public List<CloudprimeNode> list(boolean readyOnly){
+
+    public List<CloudprimeNode> list(boolean readyOnly) {
         return readyOnly ? new LinkedList<>(NODES.values()) : EC2Controller.getInstance().getAllNodes();
     }
 
-    public void runJob(Job job) throws IOException, InterruptedException {
+    public void runJob(CloudprimeJob job) throws IOException, InterruptedException {
         CloudprimeNode node = findAdequateNode(job);
         String got = relay(node, job);
         job.setResult(got);
     }
 
-    private CloudprimeNode findAdequateNode(Job job) throws IOException, InterruptedException {
+    private CloudprimeNode findAdequateNode(CloudprimeJob job) throws IOException, InterruptedException {
         CloudprimeNode bestFit = null;
         while (bestFit == null) {
             for (CloudprimeNode node : new LinkedList<>(NODES.values())) {
-                if (isAdequate(node)) {
+                if (isAdequate(job,node)) {
                     bestFit = bestFit(bestFit, node);
                 }
             }
@@ -136,10 +136,21 @@ public class NodeController {
     }
 
     // the number of jobs should be irrelevant
-    @Deprecated
-    private boolean isAdequate(CloudprimeNode node) {
-        List<Job> jobs = node.getJobs();
-        return jobs.size() < config.getInt(LoadBalancer.Property.MAX_JOBS_PER_NODE, LoadBalancer.Default.MAX_JOBS_PER_NODE);
+    private boolean isAdequate(CloudprimeJob newJob, CloudprimeNode node) {
+        long pending = expectedWeight(node.getJobs());
+        long newCost = newJob.getCost();
+        int cheap = config.getInt(LoadBalancer.Property.JOB_CHEAP_THRESHOLD, LoadBalancer.Default.JOB_CHEAP_THRESHOLD);
+        int average = config.getInt(LoadBalancer.Property.JOB_AVERAGE_THRESHOLD, LoadBalancer.Default.JOB_AVERAGE_THRESHOLD);
+        if (pending == -1) {
+            return false;
+        }
+        else if (newCost == -1) {
+            return pending < average;
+        } else if (newCost < cheap) {
+            return true;
+        } else {
+            return newCost + pending < average;
+        }
     }
 
     private CloudprimeNode bestFit(CloudprimeNode a, CloudprimeNode b) {
@@ -149,8 +160,8 @@ public class NodeController {
         if (b == null) {
             return a;
         }
-        List<Job> jobsA = a.getJobs();
-        List<Job> jobsB = b.getJobs();
+        List<CloudprimeJob> jobsA = a.getJobs();
+        List<CloudprimeJob> jobsB = b.getJobs();
         long expectedWeightA = expectedWeight(jobsA);
         long expectedWeightB = expectedWeight(jobsB);
         if (expectedWeightA == expectedWeightB) {
@@ -165,6 +176,10 @@ public class NodeController {
             } else {
                 return a;
             }
+        } else if (expectedWeightA == -1) {
+            return b;
+        } else if (expectedWeightB == -1) {
+            return a;
         } else if (expectedWeightA > expectedWeightB) {
             return b;
         } else {
@@ -172,15 +187,23 @@ public class NodeController {
         }
     }
 
-    private long expectedWeight(List<Job> jobs) {
+    private long expectedWeight(List<CloudprimeJob> jobs) {
         if (jobs.isEmpty()) {
             return 0;
         } else {
-            return new LinkedList<>(jobs).stream().map(j -> j.getCost()).reduce((w1, w2) -> w1 + w2).get();
+            long soFar = 0;
+            for (CloudprimeJob job : jobs) {
+                if (job.getCost() == -1) {
+                    return -1;
+                } else {
+                    soFar += job.getCost();
+                }
+            }
+            return soFar;
         }
     }
 
-    private String relay(CloudprimeNode node, Job job) throws IOException {
+    private String relay(CloudprimeNode node, CloudprimeJob job) throws IOException {
         System.out.println("Relaying " + job.getNumber() + " to node " + node.getId());
         okhttp3.Response response = null;
         try {

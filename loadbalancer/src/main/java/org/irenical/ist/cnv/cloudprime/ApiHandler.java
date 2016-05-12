@@ -87,7 +87,7 @@ public class ApiHandler extends HttpHandler {
     }
 
     private void job(Writer writer) throws IOException {
-        List<Job> jobs = JobController.getInstance().list();
+        List<CloudprimeJob> jobs = JobController.getInstance().list();
         Gson gson = new Gson();
         writer.write(gson.toJson(jobs));
     }

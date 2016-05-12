@@ -16,7 +16,6 @@ public class DynamoController {
     private final ExecutorService exec = Executors.newCachedThreadPool();
 
     private DynamoDB dynamo;
-
     
     private DynamoController() {
         AmazonDynamoDBClient dynamoC = new AmazonDynamoDBClient();

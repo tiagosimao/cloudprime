@@ -1,0 +1,70 @@
+digraph {
+  
+  timer[
+    shape="diamond",
+    label="timer"
+  ]
+  timer -> timer[label="wait"]
+  timer -> list[label="run"]
+  
+  list[
+    shape="box",
+    label="list healthy
+    CNodes"
+  ]
+  list -> sizebig
+  
+  sizebig[
+    shape="diamond",
+    label="is node count
+    > min node count"
+  ]
+  sizebig -> foreach[label="Y"]
+  sizebig -> sizesmall[label="N"]
+  
+  sizesmall[
+    shape="diamond",
+    label="is node count
+    < min node count"
+  ]
+  sizesmall -> create[label="Y"]
+  sizesmall -> timer[label="N"]
+
+  create[
+    shape="box",
+    label="create new
+    CNode"
+  ]
+  create -> timer
+  
+  foreach[
+    shape="box",
+    label="for each
+    CNode"
+  ]
+  foreach -> active
+
+  active[
+    shape="diamond",
+    label="CNode recently
+    active"
+  ]
+  active -> forend[label="Y"]
+  active -> destroy[label="N"]
+  
+  forend[
+    shape="box",
+    label="for each
+    end"
+  ]
+  forend -> timer
+  
+  destroy[
+    shape="box",
+    label="destroy
+    CNode"
+  ]
+  destroy -> forend
+
+}
+

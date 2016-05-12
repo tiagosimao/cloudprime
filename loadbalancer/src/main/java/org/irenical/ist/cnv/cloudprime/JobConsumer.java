@@ -18,7 +18,7 @@ public class JobConsumer implements Runnable {
     @Override
     public void run() {
         while (isRunning) {
-            Job job = null;
+            CloudprimeJob job = null;
             try {
                 job = JobController.getInstance().popJob();
                 preProcess(job);
@@ -37,7 +37,7 @@ public class JobConsumer implements Runnable {
         }
     }
 
-    private void preProcess(Job job) {
+    private void preProcess(CloudprimeJob job) {
         job.setCost(expectedWeight(job.getNumber()));
     }
 
@@ -46,7 +46,7 @@ public class JobConsumer implements Runnable {
         if (got.isPresent()) {
             return got.get().longValue();
         } else {
-            return Integer.MAX_VALUE;
+            return -1;
         }
     }
 

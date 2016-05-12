@@ -20,7 +20,7 @@ public class CloudprimeNode {
     
     private long lastError;
     
-    private List<Job> jobs = new CopyOnWriteArrayList<>();
+    private List<CloudprimeJob> jobs = new CopyOnWriteArrayList<>();
 
     public void setPrivateAddress(String privateAddress) {
         this.privateAddress = privateAddress;
@@ -62,7 +62,7 @@ public class CloudprimeNode {
         return launchTime;
     }
     
-    public List<Job> getJobs() {
+    public List<CloudprimeJob> getJobs() {
         return jobs;
     }
     
@@ -70,7 +70,7 @@ public class CloudprimeNode {
         return lastActivity;
     }
     
-    public void setJobs(List<Job> jobs) {
+    public void setJobs(List<CloudprimeJob> jobs) {
         this.jobs = jobs;
     }
     

@@ -14,11 +14,11 @@ public class LoadBalancer {
         
         static String PORT = "cloudprime.lb.port";
         
+        static String MAX_REQUESTS = "cloudprime.lb.maxrequests";
+        
         static String MIN_NODES = "cloudprime.lb.min.nodes";
 
         static String MAX_NODES = "cloudprime.lb.max.nodes";
-        
-        static String MAX_JOBS_PER_NODE = "cloudprime.lb.max.jobspernode";
         
         static String CONSUMER_THREAD_COUNT = "cloudprime.lb.consumer.threadcount";
 
@@ -28,17 +28,19 @@ public class LoadBalancer {
         
         static String JOB_CHEAP_THRESHOLD = "cloudprime.lb.job.cheap.threshold";
         
+        static String JOB_AVERAGE_THRESHOLD = "cloudprime.lb.job.average.threshold";
+        
     }
     
     public static class Default {
         
         static int PORT = 8000;
         
+        static int MAX_REQUESTS = 100;
+        
         static int MIN_NODES = 0;
 
-        static int MAX_NODES = 4;
-        
-        static int MAX_JOBS_PER_NODE = 4;
+        static int MAX_NODES = 10;
         
         static int CONSUMER_THREAD_COUNT = 10;
 
@@ -47,6 +49,8 @@ public class LoadBalancer {
         static int MAX_NODE_INACTIVITY_MILLIS = 1000 * 60;
         
         static int JOB_CHEAP_THRESHOLD = 10000000;
+        
+        static int JOB_AVERAGE_THRESHOLD = 1000000000;
         
     }
     
@@ -68,6 +72,10 @@ public class LoadBalancer {
         }
         httpServer=new HttpServer();
         NetworkListener networkListener = new NetworkListener("LoadBalancer", "0.0.0.0", config.getInt(Property.PORT,Default.PORT));
+        networkListener.getTransport().setServerConnectionBackLog(config.getInt(Property.MAX_REQUESTS,Default.MAX_REQUESTS));
+//        networkListener.getTransport().setSelectorRunnersCount(config.getInt(Property.MAX_REQUESTS,Default.MAX_REQUESTS));
+        networkListener.getTransport().getWorkerThreadPoolConfig().setCorePoolSize((config.getInt(Property.MAX_REQUESTS,Default.MAX_REQUESTS)));
+        networkListener.getTransport().getWorkerThreadPoolConfig().setQueueLimit((config.getInt(Property.MAX_REQUESTS,Default.MAX_REQUESTS)));
         httpServer.addListener(networkListener);
         httpServer.getServerConfiguration().addHttpHandler(redirect, "/f.html");
         httpServer.getServerConfiguration().addHttpHandler(api, "/api");
