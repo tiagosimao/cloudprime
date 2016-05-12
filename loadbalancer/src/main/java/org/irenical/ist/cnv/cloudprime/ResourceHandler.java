@@ -33,6 +33,8 @@ public class ResourceHandler extends HttpHandler {
         switch (path) {
         case "/cloudprime.js":
             return "cloudprime.js";
+        case "/cloudprime.css":
+            return "cloudprime.css";
         default:
             return "index.html";
         }

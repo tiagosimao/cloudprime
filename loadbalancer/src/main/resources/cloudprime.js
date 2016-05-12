@@ -27,33 +27,64 @@ function printConfig(config) {
     f.setAttribute('method',"post");
     f.setAttribute('action',"/api/config");
     
-    Object.keys(config).forEach( k => { 
+    Object.keys(config).forEach( k => {
+        var d = document.createElement("div");
+        var l = document.createElement("label"); 
         var i = document.createElement("input");
+        
+        l.textContent=k;
+        
         i.setAttribute('type',"text");
         i.setAttribute('value',config[k]);
         i.setAttribute('name', k);
-        f.appendChild(i);
+        
+        l.appendChild(i);
+        d.appendChild(l);
+        f.appendChild(d);
     });
 
-    var s = document.createElement("input");
+    var d = document.createElement("div");
+    d.className="button";
+    var s = document.createElement("button");
     s.setAttribute('type',"submit");
     s.setAttribute('value',"Submit");
+    s.textContent = "Update";
 
-    f.appendChild(s);
+    d.appendChild(s);
+    f.appendChild(d);
 
     document.getElementsByTagName('body')[0].appendChild(f);
 }
 
+function jobToString(job) {
+    var result = "<div class='job'>";
+    result += "<b>Number:</b> " + job["number"] + "</br>";
+    result += "<b>Cost:</b> " + job["cost"] + "</br>";
+    return result + "</div>";
+}
+
+function nodeToString(d){
+    var result = "<div class='node'>";
+    result += "<b>Id:</b> " + d["id"] + "</br>";
+    result += "<b>Address:</b> " + d["publicAddress"] + "</br>";
+    result += "<b>Ready:</b> " + d["ready"] + "</br>";
+    return result + "</div>";
+}
+
 function printJobs(jobs){
-    var divs = d3.select("#jobs").selectAll("div").data(jobs).text(function (d){return d});
-    divs.enter().append("div").text(function(d) { return d; });
-    divs.exit().remove();
+    var divs = d3.select("#jobs").selectAll("div").classed("job",true).data(jobs).html(function (d){
+        return jobToString(d);
+    });
+    divs.enter().append("div").html(function(d) { return jobToString(d); });
+    // divs.exit().remove();
 }
 
 function printNodes(nodes){
-    var divs = d3.select("#nodes").selectAll("div").data(nodes).text(function (d){return d});
-    divs.enter().append("div").text(function(d) { return d; });
-    divs.exit().remove();
+    var divs = d3.select("#nodes").selectAll("div").classed("node",true).data(nodes).html(function (d){
+        return nodeToString(d);
+    });
+    divs.enter().append("div").html(function(d) { return nodeToString(d); });
+    // divs.exit().remove();
 }
 
 window.setInterval(updateJobs, 1000);

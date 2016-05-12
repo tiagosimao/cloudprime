@@ -4,10 +4,20 @@ import java.math.BigInteger;
 import java.util.Optional;
 
 public class JobConsumer implements Runnable {
+    
+    private boolean isRunning = true;
+    
+    public void setRunning(boolean isRunning) {
+        this.isRunning = isRunning;
+    }
+    
+    public boolean isRunning() {
+        return isRunning;
+    }
 
     @Override
     public void run() {
-        while (LoadBalancer.RUNNING) {
+        while (isRunning) {
             Job job = null;
             try {
                 job = JobController.getInstance().popJob();
@@ -36,8 +46,7 @@ public class JobConsumer implements Runnable {
         if (got.isPresent()) {
             return got.get().longValue();
         } else {
-            //TODO this will overflow when added, use a "high" value instead
-            return Long.MAX_VALUE;
+            return Integer.MAX_VALUE;
         }
     }
 

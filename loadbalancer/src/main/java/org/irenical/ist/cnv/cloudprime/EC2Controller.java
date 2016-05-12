@@ -7,6 +7,7 @@ import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -66,8 +67,32 @@ public class EC2Controller {
         }
         return instance;
     }
+    
+    public List<CloudprimeNode> getAllNodes() {
+        List<CloudprimeNode> all = new LinkedList<>();
+        DescribeInstancesRequest request = new DescribeInstancesRequest();
+        Filter filter1 = new Filter("tag:Name", Arrays.asList("cloudprime-node"));
+        Filter filter2 = new Filter("instance-state-code", Arrays.asList("0","16"));
+        DescribeInstancesResult result = ec2.describeInstances(request.withFilters(filter1, filter2));
+        List<Reservation> reservations = result.getReservations();
 
-    public void updateNodes(Map<String, CloudprimeNode> current) {
+        for (Reservation r : reservations) {
+            for (Instance i : r.getInstances()) {
+                try {
+                    Optional<CloudprimeNode> got = getNode(i.getInstanceId());
+                    if (got.isPresent()) {
+                        CloudprimeNode node = got.get();
+                        all.add(node);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return all;
+    }
+
+    public synchronized void updateNodes(Map<String, CloudprimeNode> current) {
         Set<String> running = new HashSet<>();
         DescribeInstancesRequest request = new DescribeInstancesRequest();
         Filter filter1 = new Filter("tag:Name", Arrays.asList("cloudprime-node"));

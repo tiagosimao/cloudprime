@@ -10,9 +10,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.irenical.jindy.Config;
+import org.irenical.jindy.ConfigFactory;
+
 import okhttp3.OkHttpClient;
 
 public class NodeController {
+    
+    private static final Config config = ConfigFactory.getConfig();
 
     private final OkHttpClient http = new OkHttpClient().newBuilder().connectTimeout(0, TimeUnit.MILLISECONDS).readTimeout(0, TimeUnit.MILLISECONDS).build();
 
@@ -42,6 +47,8 @@ public class NodeController {
         ec2Sync = () -> {
             try {
                 if (LoadBalancer.RUNNING) {
+                    int minNodes = config.getInt(LoadBalancer.Property.MIN_NODES, LoadBalancer.Default.MIN_NODES);
+                    long maxInactivity = config.getInt(LoadBalancer.Property.MAX_NODE_INACTIVITY_MILLIS, LoadBalancer.Default.MAX_NODE_INACTIVITY_MILLIS);
                     EC2Controller.getInstance().updateNodes(NODES);
                     synchronized(NodeController.this){
                         NodeController.this.notifyAll();
@@ -50,18 +57,18 @@ public class NodeController {
                     for (CloudprimeNode n : NODES.values()) {
                         System.out.println("N: " + n.getId() + " (running " + n.getJobs().size() + " jobs)");
                     }
-                    if (NODES.size() > LoadBalancer.MIN_NODES) {
+                    if (NODES.size() > minNodes) {
                         for (CloudprimeNode node : NODES.values()) {
                             List<Job> jobs = node.getJobs();
                             if (node.isReady() && jobs.isEmpty()) {
                                 long last = node.getLastActivity();
-                                if (System.currentTimeMillis() - last > LoadBalancer.MAX_NODE_INACTIVITY_MILLIS) {
+                                if (System.currentTimeMillis() - last > maxInactivity) {
                                     EC2Controller.getInstance().destroyNode(node.getId());
                                     break;
                                 }
                             }
                         }
-                    } else if(NODES.size() < LoadBalancer.MIN_NODES) {
+                    } else if(NODES.size() < minNodes) {
                         EC2Controller.getInstance().createNode();
                         EC2Controller.getInstance().updateNodes(NODES);
                     }
@@ -69,7 +76,7 @@ public class NodeController {
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
-                executor.schedule(ec2Sync, LoadBalancer.EC2_SYNC_POLL_MILLIS, TimeUnit.MILLISECONDS);
+                executor.schedule(ec2Sync, config.getInt(LoadBalancer.Property.EC2_SYNC_POLL_MILLIS, LoadBalancer.Default.EC2_SYNC_POLL_MILLIS), TimeUnit.MILLISECONDS);
             }
         };
         executor.schedule(ec2Sync, 0, TimeUnit.MILLISECONDS);
@@ -80,8 +87,8 @@ public class NodeController {
         ec2Lancher.shutdown();
     }
     
-    public List<CloudprimeNode> list(){
-        return new LinkedList<>(NODES.values());
+    public List<CloudprimeNode> list(boolean readyOnly){
+        return readyOnly ? new LinkedList<>(NODES.values()) : EC2Controller.getInstance().getAllNodes();
     }
 
     public void runJob(Job job) throws IOException, InterruptedException {
@@ -108,18 +115,19 @@ public class NodeController {
     }
 
     private synchronized void youRequireMoreVespeneGas() throws InterruptedException {
-        if (NODES.size() < LoadBalancer.MAX_NODES && !pendingEC2Creation) {
+        if (NODES.size() < config.getInt(LoadBalancer.Property.MAX_NODES, LoadBalancer.Default.MAX_NODES) && !pendingEC2Creation) {
             pendingEC2Creation = true;
             ec2Lancher.execute(() -> {
                 try {
                     EC2Controller.getInstance().createNode();
+                    EC2Controller.getInstance().updateNodes(NODES);
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
-                    pendingEC2Creation = false;
                     synchronized (NodeController.this) {
                         NodeController.this.notifyAll();
                     }
+                    pendingEC2Creation = false;
                 }
             });
         } else {
@@ -131,7 +139,7 @@ public class NodeController {
     @Deprecated
     private boolean isAdequate(CloudprimeNode node) {
         List<Job> jobs = node.getJobs();
-        return jobs.size() < LoadBalancer.MAX_JOBS_PER_NODE;
+        return jobs.size() < config.getInt(LoadBalancer.Property.MAX_JOBS_PER_NODE, LoadBalancer.Default.MAX_JOBS_PER_NODE);
     }
 
     private CloudprimeNode bestFit(CloudprimeNode a, CloudprimeNode b) {
@@ -158,9 +166,9 @@ public class NodeController {
                 return a;
             }
         } else if (expectedWeightA > expectedWeightB) {
-            return a;
-        } else {
             return b;
+        } else {
+            return a;
         }
     }
 

@@ -1,0 +1,56 @@
+digraph {
+  client[
+    shape="box",
+    label="HTTP Client"
+  ]
+  client -> dns[label="DNS query"]
+  client -> elb[label="HTTP:80"]
+
+  dns[
+    shape="box",
+    label="DNS"
+  ]
+  dns -> client[label="A record"]
+
+  elb[
+    shape="box",
+    label="Amazon ELB"
+  ]
+  elb -> clb[label="HTTP:8000"]
+  elb -> client[label="HTTP response"]
+
+  clb[
+    shape="box",
+    label="Cloudprime Load Balancer"
+  ]
+  clb -> dynamo[label="HTTP:80"]
+  clb -> ec2[label="HTTPS:443"]
+  clb -> node1[label="HTTP:8080"]
+  clb -> nodeetc[label="HTTP:8080"]
+  
+  node1[
+    shape="box",
+    label="Cloudprime Node 1"
+  ]
+  node1 -> clb[label="HTTP response"]
+
+  nodeetc[
+    shape="box",
+    label="Cloudprime Node ..."
+  ]
+  nodeetc -> clb[label="HTTP response"]
+  
+  dynamo[
+    shape="box",
+    label="Amazon DynamoDB API"
+  ]
+  dynamo -> clb[label="HTTPS response"]
+  
+  ec2[
+    shape="box",
+    label="Amazon EC2 API"
+  ]
+  ec2 -> clb[label="HTTPS response"]
+
+}
+

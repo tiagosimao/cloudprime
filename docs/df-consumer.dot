@@ -1,0 +1,85 @@
+digraph {
+
+  waitjob[
+    shape="diamond",
+    label="is job
+    available?"
+  ]
+  waitjob -> waitjob[label="N"]
+  waitjob -> dynamo[label="Y"]
+  
+  dynamo[
+    shape="diamond",
+    label="is known
+    number?"
+  ]
+  dynamo -> costdyn[label="Y"]
+  dynamo -> costdef[label="N"]
+  
+  costdyn[
+    shape="box",
+    label="set number cost to
+    known value"
+  ]
+  costdyn -> find
+  
+  costdef[
+    shape="box",
+    label="set number cost to
+    infinity"
+  ]
+  costdef -> find
+  
+  find[
+    shape="box",
+    label="find best CNode
+    that fits number cost"
+  ]
+  find -> found;
+  
+  found[
+    shape="diamond",
+    label="was CNode
+    found?"
+  ]
+  found -> proxy[label="Y"]
+  found -> canec2[label="N"]
+  
+  canec2[
+    shape="diamond",
+    label="can create
+    new CNode?"
+  ]
+  canec2 -> ec2[label="Y"]
+  canec2 -> waitcap[label="N"]
+  
+  ec2[
+    shape="box",
+    label="idempotently
+    create new CNode"
+  ]
+  ec2 -> waitcap
+  
+  waitcap[
+    shape="diamond",
+    label="Wait on
+    Capacity"
+  ]
+  waitcap -> waitcap[label="N"]
+  waitcap -> find[label="Y"]
+  
+  proxy[
+    shape="box",
+    label="request to CNode"
+  ]
+  proxy -> notify
+  
+  notify[
+    shape="box",
+    label="notify capacity
+    + job consumer"
+  ]
+  notify -> waitjob
+
+}
+

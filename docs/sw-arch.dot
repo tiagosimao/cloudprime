@@ -1,0 +1,32 @@
+digraph {
+  clb[
+    shape="box",
+    label="Cloudprime Load Balancer"
+  ]
+  clb -> dynamo;
+  clb -> ec2;
+  clb -> node1;
+  clb -> nodeetc;
+
+  dynamo[
+    shape="box",
+    label="Amazon DynamoDB"
+  ]
+
+  ec2[
+    shape="box",
+    label="Amazon EC2"
+  ]
+
+  node1[
+    shape="box",
+    label="Cloudprime Node 1"
+  ]
+
+  nodeetc[
+    shape="box",
+    label="Cloudprime Node ..."
+  ]
+
+}
+

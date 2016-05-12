@@ -9,13 +9,20 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.irenical.jindy.Config;
+import org.irenical.jindy.ConfigFactory;
+
 public class JobController {
-    
-    private final ExecutorService consumers = Executors.newFixedThreadPool(LoadBalancer.CONSUMER_THREAD_COUNT);
+
+    private static final Config config = ConfigFactory.getConfig();
 
     private final BlockingQueue<Job> jobQueue = new LinkedBlockingQueue<>();
-    
+
     private final List<Job> pending = new CopyOnWriteArrayList<Job>();
+
+    private ExecutorService executor = null;
+
+    private List<JobConsumer> consumers = null;
 
     private JobController() {
     }
@@ -28,18 +35,39 @@ public class JobController {
         }
         return instance;
     }
-    
-    public void start() {
-        for(int i=0;i<LoadBalancer.CONSUMER_THREAD_COUNT;++i){
-            consumers.submit(new JobConsumer());
+
+    public void reload() {
+        int threadCount = config.getInt(LoadBalancer.Property.CONSUMER_THREAD_COUNT, LoadBalancer.Default.CONSUMER_THREAD_COUNT);
+        ExecutorService oldExecutor = executor;
+        List<JobConsumer> oldConsumers = consumers;
+
+        executor = Executors.newFixedThreadPool(threadCount);
+        consumers = new CopyOnWriteArrayList<>();
+        for (int i = 0; i < threadCount; ++i) {
+            JobConsumer consumer = new JobConsumer();
+            consumer.setRunning(true);
+            consumers.add(consumer);
+            executor.submit(consumer);
+        }
+
+        if (oldConsumers != null) {
+            for (JobConsumer c : oldConsumers) {
+                c.setRunning(false);
+            }
+        }
+        if (oldExecutor != null) {
+            oldExecutor.shutdown();
         }
     }
-    
+
     public void stop() {
-        consumers.shutdown();
+        for (JobConsumer c : consumers) {
+            c.setRunning(false);
+        }
+        executor.shutdown();
     }
-    
-    public List<Job> list(){
+
+    public List<Job> list() {
         List<Job> result = new LinkedList<>(jobQueue);
         result.addAll(pending);
         return result;
@@ -64,7 +92,7 @@ public class JobController {
         }
         return poped;
     }
-    
+
     public void putbackJob(Job job) throws InterruptedException {
         synchronized (job) {
             jobQueue.put(job);

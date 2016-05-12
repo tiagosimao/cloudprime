@@ -11,7 +11,7 @@ public class RedirectHandler extends HttpHandler {
     public void boot() throws Exception {
         LoadBalancer.RUNNING = true;
         NodeController.getInstance().start();
-        JobController.getInstance().start();
+        JobController.getInstance().reload();
     }
 
     public void shutdown() {

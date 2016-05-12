@@ -58,8 +58,8 @@ public class ApiHandler extends HttpHandler {
                     value = values.length == 1 ? values[0] : values;
                 }
                 config.setProperty(k, value);
-                LoadBalancer.reload();
             }
+            LoadBalancer.reload();
             response.sendRedirect("/");
         } else {
             Map<String, String> props = new HashMap<>();
@@ -81,7 +81,7 @@ public class ApiHandler extends HttpHandler {
     }
 
     private void node(Writer writer) throws IOException {
-        List<CloudprimeNode> nodes = NodeController.getInstance().list();
+        List<CloudprimeNode> nodes = NodeController.getInstance().list(false);
         Gson gson = new Gson();
         writer.write(gson.toJson(nodes));
     }

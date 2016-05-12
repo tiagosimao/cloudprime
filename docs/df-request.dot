@@ -1,0 +1,21 @@
+digraph {
+
+  client -> producer[label="HTTP request"]
+
+  producer[
+    shape="box",
+    label="Job Producer"
+  ]
+
+  
+  wait[
+    shape="diamond",
+    label="Is Job
+    Completed?"
+  ]
+  wait -> wait[label="N"]
+  wait -> producer[label="Y"]
+    producer -> wait[label="Queue"]
+
+}
+
