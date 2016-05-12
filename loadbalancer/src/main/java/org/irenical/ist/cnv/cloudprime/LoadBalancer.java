@@ -73,7 +73,6 @@ public class LoadBalancer {
         httpServer=new HttpServer();
         NetworkListener networkListener = new NetworkListener("LoadBalancer", "0.0.0.0", config.getInt(Property.PORT,Default.PORT));
         networkListener.getTransport().setServerConnectionBackLog(config.getInt(Property.MAX_REQUESTS,Default.MAX_REQUESTS));
-//        networkListener.getTransport().setSelectorRunnersCount(config.getInt(Property.MAX_REQUESTS,Default.MAX_REQUESTS));
         networkListener.getTransport().getWorkerThreadPoolConfig().setCorePoolSize((config.getInt(Property.MAX_REQUESTS,Default.MAX_REQUESTS)));
         networkListener.getTransport().getWorkerThreadPoolConfig().setQueueLimit((config.getInt(Property.MAX_REQUESTS,Default.MAX_REQUESTS)));
         httpServer.addListener(networkListener);
