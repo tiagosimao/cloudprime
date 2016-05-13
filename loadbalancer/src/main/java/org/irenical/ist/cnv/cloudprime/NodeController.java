@@ -55,7 +55,7 @@ public class NodeController {
                     }
                     System.out.println("Updating running nodes");
                     for (CloudprimeNode n : NODES.values()) {
-                        System.out.println("N: " + n.getId() + " (running " + n.getJobs().size() + " jobs)");
+                        System.out.println(n);
                     }
                     if (NODES.size() > minNodes) {
                         for (CloudprimeNode node : NODES.values()) {

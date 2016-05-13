@@ -12,6 +12,8 @@ public class CloudprimeJob {
 
     private boolean ongoing;
     
+    private long elapsed;
+    
     public void setCost(long cost) {
         this.cost = cost;
     }
@@ -42,6 +44,19 @@ public class CloudprimeJob {
 
     public boolean isOngoing() {
         return ongoing;
+    }
+    
+    public void setElapsed(long elapsed) {
+        this.elapsed = elapsed;
+    }
+    
+    public long getElapsed() {
+        return elapsed;
+    }
+    
+    @Override
+    public String toString() {
+        return number + ":" + elapsed + "/" + cost;
     }
     
 }

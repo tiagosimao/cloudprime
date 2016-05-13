@@ -33,10 +33,12 @@ import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.amazonaws.util.Base64;
 import com.amazonaws.util.IOUtils;
+import com.google.gson.Gson;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 public class EC2Controller {
 
@@ -67,12 +69,12 @@ public class EC2Controller {
         }
         return instance;
     }
-    
+
     public List<CloudprimeNode> getAllNodes() {
         List<CloudprimeNode> all = new LinkedList<>();
         DescribeInstancesRequest request = new DescribeInstancesRequest();
         Filter filter1 = new Filter("tag:Name", Arrays.asList("cloudprime-node"));
-        Filter filter2 = new Filter("instance-state-code", Arrays.asList("0","16"));
+        Filter filter2 = new Filter("instance-state-code", Arrays.asList("0", "16"));
         DescribeInstancesResult result = ec2.describeInstances(request.withFilters(filter1, filter2));
         List<Reservation> reservations = result.getReservations();
 
@@ -116,6 +118,7 @@ public class EC2Controller {
                                 old.setPrivateAddress(node.getPrivateAddress());
                                 old.setPublicAddress(node.getPublicAddress());
                                 old.setReady(node.isReady());
+                                updateJobs(node,old);
                             }
                         }
                     }
@@ -128,6 +131,18 @@ public class EC2Controller {
         for (String oldId : new HashSet<>(current.keySet())) {
             if (!running.contains(oldId)) {
                 current.remove(oldId);
+            }
+        }
+    }
+
+    private void updateJobs(CloudprimeNode from, CloudprimeNode to) {
+        List<CloudprimeJob> oldJobs = to.getJobs();
+        List<CloudprimeJob> newJobs = from.getJobs();
+        for(CloudprimeJob newJob : newJobs){
+            for(CloudprimeJob oldJob : oldJobs){
+                if(newJob.getNumber().equals(oldJob.getNumber())){
+                    oldJob.setElapsed(newJob.getElapsed());
+                }
             }
         }
     }
@@ -197,18 +212,23 @@ public class EC2Controller {
                 node.setPrivateAddress(i.getPrivateDnsName());
                 node.setReady(false);
                 if (16 == i.getState().getCode()) {
-                    Response response = null;
+                    ResponseBody body = null;
                     try {
                         Request hr = new Request.Builder().url("http://" + i.getPublicDnsName() + ":8080/status").build();
-                        response = http.newCall(hr).execute();
+                        Response response = http.newCall(hr).execute();
+                        body = response.body();
+                        String got = new String(body.bytes(), "UTF-8");
+                        Gson gson = new Gson();
+                        CNodeStatus status = gson.fromJson(got, CNodeStatus.class);
+                        updateJobs(node, status);
                         node.setReady(response.isSuccessful());
                     } catch (SocketTimeoutException | ConnectException e) {
                         System.out.println("No HTTP connection avaliable for node " + id);
                     } catch (IOException e) {
                         e.printStackTrace();
                     } finally {
-                        if (response != null) {
-                            response.body().close();
+                        if (body != null) {
+                            body.close();
                         }
                     }
                 } else if (0 != i.getState().getCode()) {
@@ -217,6 +237,20 @@ public class EC2Controller {
             }
         }
         return Optional.ofNullable(node);
+    }
+
+    private void updateJobs(CloudprimeNode node, CNodeStatus status) {
+        if (status != null) {
+            List<JobProgress> progresses = status.getProgress();
+            if (progresses != null) {
+                for (JobProgress progress : progresses) {
+                    CloudprimeJob job = new CloudprimeJob();
+                    job.setNumber(progress.getNumber());
+                    job.setElapsed(progress.getInstructionsCounter());
+                    node.getJobs().add(job);
+                }
+            }
+        }
     }
 
     private String loadUserData() throws IOException {

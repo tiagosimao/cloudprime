@@ -1,6 +1,7 @@
 package org.irenical.ist.cnv.cloudprime;
 
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -70,10 +71,6 @@ public class CloudprimeNode {
         return lastActivity;
     }
     
-    public void setJobs(List<CloudprimeJob> jobs) {
-        this.jobs = jobs;
-    }
-    
     public void setLastActivity(long lastActivity) {
         this.lastActivity = lastActivity;
     }
@@ -84,6 +81,15 @@ public class CloudprimeNode {
     
     public long getLastError() {
         return lastError;
+    }
+    
+    @Override
+    public String toString() {
+        String result = id + "[";
+        for(CloudprimeJob job : new LinkedList<CloudprimeJob>(getJobs())){
+            result += job + ", ";
+        }
+        return result + "]";
     }
     
 }

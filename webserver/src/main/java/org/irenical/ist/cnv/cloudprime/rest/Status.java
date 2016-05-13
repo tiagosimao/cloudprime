@@ -19,9 +19,10 @@ public class Status {
     public Response getStats() {
         int working = Metric.getActiveThreadCount();
         int all = Runtime.getRuntime().availableProcessors();
-        Map<String, String> status = new HashMap<String,String>();
+        Map<String, Object> status = new HashMap<String,Object>();
         status.put("totalcapacity", Integer.toString(all));
         status.put("usedcapacity", Integer.toString(working));
+        status.put("progress", Metric.getOngoing());
         return Response.ok(status).build();
     }
 
