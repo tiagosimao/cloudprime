@@ -38,7 +38,7 @@ public class LoadBalancer {
         
         static int MAX_REQUESTS = 100;
         
-        static int MIN_NODES = 0;
+        static int MIN_NODES = 1;
 
         static int MAX_NODES = 10;
         

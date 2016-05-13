@@ -141,14 +141,14 @@ public class NodeController {
         long newCost = newJob.getCost();
         int cheap = config.getInt(LoadBalancer.Property.JOB_CHEAP_THRESHOLD, LoadBalancer.Default.JOB_CHEAP_THRESHOLD);
         int average = config.getInt(LoadBalancer.Property.JOB_AVERAGE_THRESHOLD, LoadBalancer.Default.JOB_AVERAGE_THRESHOLD);
-        if (newCost < cheap) {
+        if (newCost == -1) {
+            return pending < average && pending > -1;
+        } 
+        else if (newCost < cheap) {
             return true;
         }
         else if (pending == -1) {
             return false;
-        }
-        else if (newCost == -1) {
-            return pending < average;
         } else {
             return newCost + pending < average;
         }
@@ -197,7 +197,7 @@ public class NodeController {
                 if (job.getCost() == -1) {
                     return -1;
                 } else {
-                    soFar += job.getCost();
+                    soFar += job.getCost() - job.getElapsed();
                 }
             }
             return soFar;
